@@ -1,4 +1,4 @@
-package com.banquito.cbs.gestiontarjetas.excepcion;
+package com.banquito.cbs.gestiontarjetas.dto;
 
 public class ErrorDto {
     private String mensaje;
