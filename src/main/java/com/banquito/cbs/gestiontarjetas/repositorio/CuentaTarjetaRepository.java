@@ -7,6 +7,4 @@ import com.banquito.cbs.gestiontarjetas.modelo.CuentaTarjeta;
 
 @Repository
 public interface CuentaTarjetaRepository extends JpaRepository<CuentaTarjeta, Integer> {
-    
-
 }
