@@ -41,6 +41,4 @@ public class CuentaTarjeta {
 
     @Column(name = "ESTADO", length = 1, nullable = false)
     private String estado;
-    
-    
 }

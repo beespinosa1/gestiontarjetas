@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.banquito.cbs.gestiontarjetas.dto.TarjetaDto;
+import com.banquito.cbs.gestiontarjetas.dto.CrearTarjetaDto;
 import com.banquito.cbs.gestiontarjetas.servicio.TarjetaService;
 import com.banquito.cbs.gestiontarjetas.controlador.mapper.TarjetaPeticionMapper;
 import com.banquito.cbs.gestiontarjetas.excepcion.EntidadNoEncontradaException;
@@ -60,14 +61,21 @@ public class TarjetaController {
         }
     }
 
-    @Operation(summary = "Emitir nueva tarjeta")
-    @PostMapping("/cuenta/{idCuentaTarjeta}")
-    public ResponseEntity<TarjetaDto> emitir(@PathVariable Integer idCuentaTarjeta) {
+    @Operation(summary = "Emitir nueva tarjeta", description = "Crea una nueva tarjeta con los datos proporcionados")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Tarjeta creada exitosamente"),
+        @ApiResponse(responseCode = "404", description = "Cuenta no encontrada"),
+        @ApiResponse(responseCode = "400", description = "Datos de tarjeta inválidos")
+    })
+    @PostMapping
+    public ResponseEntity<TarjetaDto> emitir(
+            @Parameter(description = "Datos de la tarjeta a crear", required = true)
+            @RequestBody CrearTarjetaDto datosTarjeta) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
-                .body(servicio.crearTarjeta(idCuentaTarjeta));
+                .body(servicio.crearTarjeta(datosTarjeta));
         } catch (EntidadNoEncontradaException e) {
-            log.error("Error al emitir tarjeta para cuenta {}", idCuentaTarjeta, e);
+            log.error("Error al emitir tarjeta para cuenta {}", datosTarjeta.getIdCuentaTarjeta(), e);
             return ResponseEntity.notFound().build();
         }
     }
@@ -104,6 +112,24 @@ public class TarjetaController {
             return ResponseEntity.ok().build();
         } catch (EntidadNoEncontradaException e) {
             log.error("Tarjeta con ID {} no encontrada", id, e);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @Operation(summary = "Obtener tarjeta por número", description = "Devuelve una tarjeta específica por su número.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Tarjeta encontrada exitosamente"),
+        @ApiResponse(responseCode = "404", description = "Tarjeta no encontrada")
+    })
+    @GetMapping()
+    public ResponseEntity<TarjetaDto> obtenerPorNumero(
+            @Parameter(description = "Número de la tarjeta", required = true) 
+            @RequestParam(name = "numero") String numero) {
+        log.info("Buscando tarjeta con número: {}", numero);
+        try {
+            return ResponseEntity.ok(mapper.toDto(servicio.buscarPorNumero(numero)));
+        } catch (EntidadNoEncontradaException e) {
+            log.error("Tarjeta con número {} no encontrada", numero, e);
             return ResponseEntity.notFound().build();
         }
     }

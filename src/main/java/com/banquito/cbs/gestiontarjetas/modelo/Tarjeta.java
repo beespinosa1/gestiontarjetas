@@ -18,7 +18,7 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 @Entity
-@Table(name = "cuenta_tarjeta")
+@Table(name = "tarjeta")
 public class Tarjeta {
 
     @Id
@@ -26,8 +26,11 @@ public class Tarjeta {
     @Column(name = "ID", nullable = false)
     private Integer id;
 
+    @Column(name = "ID_CUENTA_TARJETA", nullable = false)
+    private Integer idCuentaTarjeta;
+
     @ManyToOne
-    @JoinColumn(name = "ID_CUENTA_TARJETA", nullable = false)
+    @JoinColumn(name = "ID_CUENTA_TARJETA", referencedColumnName = "ID", nullable = false, insertable = false, updatable = false)
     private CuentaTarjeta cuentaTarjeta;
 
     @Column(name = "NUMERO", length = 16, nullable = false)

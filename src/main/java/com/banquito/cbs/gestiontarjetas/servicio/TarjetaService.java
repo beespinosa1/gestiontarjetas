@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 import com.banquito.cbs.gestiontarjetas.dto.TarjetaDto;
+import com.banquito.cbs.gestiontarjetas.dto.CrearTarjetaDto;
 import com.banquito.cbs.gestiontarjetas.modelo.Tarjeta;
 import com.banquito.cbs.gestiontarjetas.modelo.CuentaTarjeta;
 import com.banquito.cbs.gestiontarjetas.repositorio.TarjetaRepository;
@@ -52,18 +53,18 @@ public class TarjetaService {
     }
 
     @Transactional
-    public TarjetaDto crearTarjeta(Integer idCuentaTarjeta) {
-        CuentaTarjeta cuentaTarjeta = cuentaTarjetaRepository.findById(idCuentaTarjeta)
+    public TarjetaDto crearTarjeta(CrearTarjetaDto datosTarjeta) {
+        CuentaTarjeta cuentaTarjeta = cuentaTarjetaRepository.findById(datosTarjeta.getIdCuentaTarjeta())
             .orElseThrow(() -> new EntidadNoEncontradaException(
-                String.format("No se encontró la cuenta tarjeta con ID: %d", idCuentaTarjeta)));
+                String.format("No se encontró la cuenta tarjeta con ID: %d", datosTarjeta.getIdCuentaTarjeta())));
 
         Tarjeta tarjeta = new Tarjeta();
         tarjeta.setCuentaTarjeta(cuentaTarjeta);
-        tarjeta.setNumero(this.generarNuevoNumeroTarjeta());
+        tarjeta.setNumero(datosTarjeta.getNumero());
         tarjeta.setFechaEmision(LocalDateTime.now().toLocalDate());
-        tarjeta.setEstado(ESTADO_ACTIVA);
+        tarjeta.setEstado(datosTarjeta.getEstado());
 
-        log.info("Creando tarjeta para cuenta: {}", idCuentaTarjeta);
+        log.info("Creando tarjeta para cuenta: {}", datosTarjeta.getIdCuentaTarjeta());
         return mapper.toDto(repositorio.save(tarjeta));
     }
 
@@ -89,18 +90,5 @@ public class TarjetaService {
         tarjeta.setEstado(ESTADO_BLOQUEADA);
         repositorio.save(tarjeta);
         log.info("Tarjeta {} bloqueada", id);
-    }
-
-    private String generarNuevoNumeroTarjeta() {
-        Tarjeta ultimaTarjeta = repositorio.findTopByOrderByFechaEmisionDesc().orElse(null);
-        String numero = (ultimaTarjeta == null) 
-            ? "4111111111111111" 
-            : String.valueOf(Long.parseLong(ultimaTarjeta.getNumero()) + 1);
-        
-        if (numero.length() > 16) {
-            throw new RuntimeException("No se pueden generar más números de tarjeta");
-        }
-        
-        return String.format("%016d", Long.parseLong(numero));
     }
 }
